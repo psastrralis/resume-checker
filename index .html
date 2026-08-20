@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Parser Agent</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#687386;--line:#e7eaf0;--primary:#635bff;--primary2:#8b5cf6;--green:#16a34a;--amber:#d97706;--red:#dc2626}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+.app{display:flex;min-height:100vh}.side{width:245px;background:#101322;color:#dfe3f0;padding:22px 14px;position:fixed;inset:0 auto 0 0}.brand{font-size:20px;font-weight:800;padding:8px 12px 25px}.brand span{color:#8b7cff}.nav button{width:100%;background:transparent;border:0;color:#aeb6c8;text-align:left;padding:12px;border-radius:10px;margin:3px 0;cursor:pointer;font-size:14px}.nav button.active,.nav button:hover{background:#20243a;color:#fff}.main{margin-left:245px;width:calc(100% - 245px);padding:28px 34px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.top h1{margin:0;font-size:27px}.top p{margin:5px 0 0;color:var(--muted)}.pill{padding:8px 12px;background:#ecebff;color:#5148d8;border-radius:20px;font-size:12px;font-weight:700}
+.page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:19px;box-shadow:0 5px 20px #18213a08}.stat .num{font-size:26px;font-weight:800;margin:7px 0}.muted{color:var(--muted);font-size:13px}.section{margin-top:22px}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.section-title h2{font-size:17px;margin:0}.upload{border:2px dashed #cfd4e4;border-radius:16px;padding:42px;text-align:center;background:#fafbff;cursor:pointer}.upload:hover{border-color:var(--primary);background:#f8f7ff}.upload .icon{font-size:38px}.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer}.primary{background:var(--primary);color:#fff}.secondary{background:#eef0f6;color:#333}.input,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;margin-top:8px;background:#fff}.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}.pipeline{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.step{text-align:center;padding:15px 6px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:12px}.step.done{border-color:#b9e6c7;background:#f0fdf4}.step.active{border-color:#c9c4ff;background:#f5f3ff}.dot{width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block;margin-right:5px}.field{display:grid;grid-template-columns:180px 1fr 100px;gap:15px;align-items:start;padding:15px 0;border-bottom:1px solid var(--line)}.badge{display:inline-block;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:800}.found{background:#dcfce7;color:#15803d}.missing{background:#fee2e2;color:#b91c1c}.amb{background:#fef3c7;color:#b45309}.evidence{background:#f7f8fc;padding:9px;border-radius:8px;font-size:12px;color:#4d586b}.score{font-size:54px;font-weight:900;color:var(--primary)}.bar{height:10px;background:#eceef4;border-radius:10px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));width:86%}.req{padding:14px 0;border-bottom:1px solid var(--line)}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:13px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-size:11px;text-transform:uppercase}.toast{position:fixed;right:25px;bottom:25px;background:#111827;color:#fff;padding:13px 17px;border-radius:10px;display:none}.dark{--bg:#0b1020;--card:#121827;--text:#eef2ff;--muted:#9aa4b8;--line:#273047}.dark .input,.dark textarea,.dark .upload{background:#0e1525;color:#fff}.dark .secondary{background:#242b3e;color:#fff}.dark .evidence{background:#0e1525}
+@media(max-width:900px){.side{width:72px}.brand{font-size:0}.brand span{font-size:20px}.nav button{font-size:0;text-align:center}.main{margin-left:72px;width:calc(100% - 72px);padding:20px}.grid{grid-template-columns:repeat(2,1fr)}.pipeline{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}.field{grid-template-columns:1fr}.top h1{font-size:22px}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.pipeline{grid-template-columns:1fr 1fr}.main{padding:14px}.upload{padding:25px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side"><div class="brand"><span>◆</span> Resume Parser</div>
+<div class="nav">
+<button class="active" onclick="show('dashboard',this)">▣ &nbsp; Dashboard</button>
+<button onclick="show('upload',this)">↑ &nbsp; Upload & Analyze</button>
+<button onclick="show('profile',this)">◎ &nbsp; Structured Profile</button>
+<button onclick="show('report',this)">★ &nbsp; Fit Report</button>
+<button onclick="show('ranking',this)">☷ &nbsp; Candidate Ranking</button>
+<button onclick="show('evidence',this)">⌕ &nbsp; Evidence Viewer</button>
+<button onclick="show('history',this)">◷ &nbsp; Analysis History</button>
+</div></aside>
+
+<main class="main">
+<div class="top"><div><h1 id="title">Resume Parser Agent</h1><p>Evidence-backed candidate profiles and job-fit analysis</p></div><div><button class="btn secondary" onclick="toggleDark()">◐ Theme</button></div></div>
+
+<section id="dashboard" class="page active">
+<div class="grid">
+<div class="card stat"><div class="muted">Resumes Parsed</div><div class="num">128</div><div class="muted">+12 this week</div></div>
+<div class="card stat"><div class="muted">Average Fit Score</div><div class="num">82%</div><div class="muted">Across analyzed roles</div></div>
+<div class="card stat"><div class="muted">Fields Extracted</div><div class="num">1,248</div><div class="muted">Evidence verified</div></div>
+<div class="card stat"><div class="muted">Successful Analyses</div><div class="num">96%</div><div class="muted">Deterministic runs</div></div>
+</div>
+<div class="section card"><div class="section-title"><h2>Quick Analysis</h2><button class="btn primary" onclick="show('upload',document.querySelectorAll('.nav button')[1])">Analyze Resume</button></div>
+<p class="muted">Upload a PDF/DOCX resume and provide a target Job Description to generate a grounded fit report.</p>
+<div class="pipeline">
+<div class="step done">✓<br>Resume</div><div class="step done">✓<br>Extractor</div><div class="step done">✓<br>Segmenter</div><div class="step done">✓<br>Field Parser</div><div class="step done">✓<br>Evidence</div><div class="step active">AI Scorer</div>
+</div></div>
+<div class="section card"><div class="section-title"><h2>Recent Analyses</h2></div>
+<table><tr><th>Candidate</th><th>Role</th><th>Fit</th><th>Status</th></tr>
+<tr><td>Alex Johnson</td><td>Software Engineer</td><td><b>92%</b></td><td><span class="badge found">Completed</span></td></tr>
+<tr><td>Priya Sharma</td><td>Data Analyst</td><td><b>86%</b></td><td><span class="badge found">Completed</span></td></tr>
+<tr><td>Ravi Kumar</td><td>Backend Developer</td><td><b>74%</b></td><td><span class="badge found">Completed</span></td></tr></table></div>
+</section>
+
+<section id="upload" class="page">
+<div class="two">
+<div class="card"><h2>Upload Resume</h2><p class="muted">PDF or DOCX • source file remains unchanged</p>
+<div class="upload" onclick="document.getElementById('file').click()"><div class="icon">⇧</div><b>Drop your resume here</b><p class="muted">or click to browse</p><input id="file" type="file" accept=".pdf,.docx" hidden onchange="fileChosen(this)"></div>
+<div id="filename" class="muted" style="margin-top:10px"></div></div>
+<div class="card"><h2>Job Description</h2><p class="muted">Paste the target role requirements.</p><textarea id="jd" rows="11" placeholder="Example: Looking for a Software Engineer proficient in Java, SQL, REST APIs and Git..."></textarea></div>
+</div>
+<div class="section card"><div class="section-title"><h2>Analysis Pipeline</h2><button class="btn primary" onclick="analyze()">Analyze Resume</button></div><div class="pipeline" id="pipeline">
+<div class="step">1<br>Extractor</div><div class="step">2<br>Segmenter</div><div class="step">3<br>Field Parser</div><div class="step">4<br>Evidence</div><div class="step">5<br>JD Matcher</div><div class="step">6<br>Fit Report</div></div>
+<p id="status" class="muted" style="margin-top:14px">Ready to analyze.</p></div>
+</section>
+
+<section id="profile" class="page"><div class="card"><div class="section-title"><div><h2>Structured Candidate Profile</h2><p class="muted">Every field is grounded in captured resume evidence.</p></div><span class="badge found">Evidence Verified</span></div><div id="fields"></div></div></section>
+
+<section id="report" class="page"><div class="two"><div class="card"><div class="muted">Overall Job Fit</div><div class="score">86%</div><div class="bar"><i></i></div><p class="muted">High confidence based on extracted evidence.</p></div><div class="card"><div class="muted">Candidate</div><h2>Alex Johnson</h2><p class="muted">Software Engineer</p><span class="badge found">Strong Match</span></div></div>
+<div class="section card"><h2>Matched & Missing Requirements</h2><div class="req"><b>Proficiency in SQL databases</b><br><span class="badge found">MATCHED</span><p class="muted">Candidate lists SQL and PostgreSQL directly in extracted skills.</p><div class="evidence">Evidence Ref: SKILLS-LIST · “Skills: SQL, PostgreSQL, MongoDB, Python, Docker”</div></div>
+<div class="req"><b>REST API development</b><br><span class="badge found">MATCHED</span><p class="muted">REST API development is listed in the Experience section.</p><div class="evidence">Evidence Ref: EXPERIENCE-01</div></div>
+<div class="req"><b>3+ years professional experience</b><br><span class="badge amb">PARTIAL</span><p class="muted">The resume contains employment dates, but the computed duration requires verification.</p></div>
+<div class="req"><b>AWS certification</b><br><span class="badge missing">MISSING</span><p class="muted">No AWS certification was found in the extracted certification data.</p></div></div></section>
+
+<section id="ranking" class="page"><div class="card"><div class="section-title"><h2>Candidate Ranking</h2><span class="muted">Sorted by fit score</span></div><table><tr><th>Rank</th><th>Candidate</th><th>Fit Score</th><th>Matched</th><th>Missing</th><th>Confidence</th></tr><tr><td>1</td><td>Alex Johnson</td><td><b>92%</b></td><td>8</td><td>1</td><td>High</td></tr><tr><td>2</td><td>Priya Sharma</td><td><b>86%</b></td><td>7</td><td>2</td><td>High</td></tr><tr><td>3</td><td>Ravi Kumar</td><td><b>74%</b></td><td>6</td><td>3</td><td>Medium</td></tr></table></div></section>
+
+<section id="evidence" class="page"><div class="card"><h2>Evidence Viewer</h2><p class="muted">Select a field to inspect its exact source evidence.</p><div class="field"><b>SKILLS-LIST</b><div><b>Skills</b><p>SQL, PostgreSQL, MongoDB, Python</p><div class="evidence">Source Section: Skills<br>Exact Evidence: “Skills: SQL, PostgreSQL, MongoDB, Python, Docker”</div></div><span class="badge found">FOUND</span></div><div class="field"><b>EDU-01</b><div><b>Highest Degree</b><p>B.Tech Computer Science</p><div class="evidence">Source Section: Education<br>Exact Evidence: “B.Tech Computer Science Engineering — 2024”</div></div><span class="badge found">FOUND</span></div></div></section>
+
+<section id="history" class="page"><div class="card"><h2>Analysis History</h2><table><tr><th>Candidate</th><th>Date</th><th>Fit</th><th>Status</th><th>Action</th></tr><tr><td>Alex Johnson</td><td>20 Aug 2026</td><td>92%</td><td>Completed</td><td><button class="btn secondary" onclick="show('report',document.querySelectorAll('.nav button')[3])">View</button></td></tr><tr><td>Priya Sharma</td><td>19 Aug 2026</td><td>86%</td><td>Completed</td><td><button class="btn secondary">View</button></td></tr></table></div></section>
+</main></div><div id="toast" class="toast"></div>
+<script>
+const fields=[
+["Full Name","Alex Johnson","Contact","FOUND","“Alex Johnson”"],
+["Email Address","alex.johnson@email.com","Contact","FOUND","“alex.johnson@email.com”"],
+["Phone Number","+91 98765 43210","Contact","FOUND","“+91 98765 43210”"],
+["LinkedIn / Portfolio","linkedin.com/in/alexjohnson","Contact","FOUND","“linkedin.com/in/alexjohnson”"],
+["Highest Degree","B.Tech Computer Science — 2024","Education","FOUND","“B.Tech Computer Science Engineering — 2024”"],
+["Most Recent Job","Software Engineer — TechNova","Experience","FOUND","“Software Engineer, TechNova”"],
+["Location","Chennai, India","Contact","FOUND","“Chennai, India”"],
+["Skills","SQL, PostgreSQL, MongoDB, Python, Docker","Skills","FOUND","“Skills: SQL, PostgreSQL, MongoDB, Python, Docker”"],
+["Certifications","AWS Certified Developer","Certifications","FOUND","“AWS Certified Developer”"],
+["Notable Projects","Resume Analytics Platform","Projects","FOUND","“Resume Analytics Platform”"]
+];
+document.getElementById('fields').innerHTML=fields.map((f,i)=>`<div class="field"><b>${f[0]}</b><div><b>${f[1]}</b><div class="muted">Source: ${f[2]}</div><div class="evidence" style="margin-top:7px">${f[4]}</div></div><span class="badge ${f[3]=='FOUND'?'found':f[3]=='NOT_FOUND'?'missing':'amb'}">${f[3]}</span></div>`).join('');
+function show(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');window.scrollTo(0,0)}
+function fileChosen(el){document.getElementById('filename').textContent=el.files[0]?'Selected: '+el.files[0].name:''}
+function toast(t){let x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2200)}
+function analyze(){let steps=document.querySelectorAll('#pipeline .step');let status=document.getElementById('status');steps.forEach(x=>x.classList.remove('active','done'));let i=0;status.textContent='Starting analysis...';let timer=setInterval(()=>{if(i>0)steps[i-1].classList.add('done');if(i<steps.length){steps[i].classList.add('active');status.textContent='Processing: '+steps[i].innerText.replace(/\\d/g,'').trim();i++}else{clearInterval(timer);status.textContent='Analysis completed successfully. Evidence-backed report ready.';steps.forEach(x=>{x.classList.remove('active');x.classList.add('done')});toast('Analysis complete — report ready');show('report',document.querySelectorAll('.nav button')[3])}},500)}
+function toggleDark(){document.body.classList.toggle('dark')}
+</script>
+</body></html>
